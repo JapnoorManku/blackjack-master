@@ -1,0 +1,16 @@
+FROM janvik/oatpp:latest
+
+WORKDIR /
+ADD . /cardGame
+WORKDIR ./cardGame
+
+RUN make test_cardGame
+RUN ./test_cardGame
+
+EXPOSE 8600 8600
+
+RUN make cardGame
+ENTRYPOINT ["./cardGame"]
+
+# Used to allow for connection to container so can use commandline
+#ENTRYPOINT ["sleep", "infinity"]

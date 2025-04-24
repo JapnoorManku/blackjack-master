@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<body onload="setGame()">
+  <head>
+    <title>Blackjack Game</title>
+  </head>
+
+<!-- Web page -->
+
+<h1>Welcome to Blackjack!</h1>
+<button id="btnStart" onclick="Start()">Start Game</button>
+<div><button id="btnHit" onclick="Hit()">Hit</button> &nbsp; <button id="btnStand" onclick="Stand()">Stand</button></div>
+<br/>
+<label id="lblPlayerScore">Your Score: </label>
+<br/>
+<label id="lblDealerScore">Dealer Score: </label>
+<br/>
+<label id="lblCurrentStatus"></label>
+
+<script>
+
+function setGame() {
+  document.getElementById("btnHit").style.display = "none";
+  document.getElementById('btnStand').style.display = "none";
+  document.getElementById('lblPlayerScore').style.display = "none";
+  document.getElementById('lblDealerScore').style.display = "none";
+  document.getElementById('lblCurrentStatus').style.display = "block";
+  document.getElementById('lblCurrentStatus').innerText = 'Game not started.';
+}  
+
+function Start() {
+  document.getElementById('btnStand').style.display = "block";
+  document.getElementById('btnHit').style.display = "block";
+  document.getElementById('btnStart').style.display = "none";
+    fetch('http://localhost:8600/game/start', {
+    method: 'GET',
+    mode: "cors",
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(function (data) {
+    console.log('Start:', data);
+    checkGame(data, 'Start');    
+  })
+  .catch(error => console.error('CORS Error:', error));
+}
+// Hit endpoint call
+function Hit() {
+      fetch('http://localhost:8600/game/hit', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(function(data) { 
+        console.log('Hit:', data);
+        checkGame(data, 'Hit');
+      })
+      .catch(error => console.error('CORS Error:', error));
+    }
+
+    // Stand endpoint call
+    function Stand() {
+      fetch('http://localhost:8600/game/stand', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(function(data) { 
+        console.log('Stand:', data);
+        checkGame(data, 'Stand');
+      })
+      .catch(error => console.error('CORS Error:', error));
+    }
+
+function checkGame(data, operation) {
+    const playerScore = data["playerScore"];
+    document.getElementById('lblPlayerScore').style.display = 'block';
+    document.getElementById('lblPlayerScore').innerText = 'Your Score: ' + playerScore;
+    if (playerScore > 21) {
+      document.getElementById('btnHit').style.display = "none";
+      document.getElementById('btnStand').style.display = "none";
+      document.getElementById('btnStart').style.display = "block";
+    } 
+
+    let status = data["status"];
+    if(operation == 'Stand') {
+      document.getElementById('lblDealerScore').style.display = "block";
+      document.getElementById('lblDealerScore').innerText = 'Dealer Score: ' + data["dealerScore"];
+      document.getElementById('btnHit').style.display = "none";
+      document.getElementById('btnStand').style.display = "none";
+      document.getElementById('btnStart').style.display = "block";
+    } else {
+      document.getElementById('lblDealerScore').style.display = "none";
+    }
+
+    if (data["status"] == 'in_progress') {
+      status = 'In Progress';
+    }
+    else if (data["status"] == 'player_bust') {
+      status = 'You lost.';
+    }
+    else if (data["status"] == 'player_wins') {
+      status = 'You won.';
+    }
+    else if (data["status"] == 'dealer_wins') {
+      status = 'Dealer wins.';
+    }
+    else if (data["status"] == 'tie') {
+      status = "It's a draw.";
+    }
+    document.getElementById('lblCurrentStatus').innerText = 'Current status: ' + status;
+}
+</script>
+</body>
+</html>
